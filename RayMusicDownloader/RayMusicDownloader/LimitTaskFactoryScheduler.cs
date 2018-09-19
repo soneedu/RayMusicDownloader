@@ -141,7 +141,7 @@ namespace MusicDownloader
             //启用多个后台多线程进行运算加快速度
             //定义字DT的最大行数，用来拆分整个DT，同时并发4个线程来跑。行数=总数/4
             var cpuCores = Environment.ProcessorCount;
-            int maxLength = 1, maxThread = 1;//cpuCores * 2;
+            int maxLength = 1, maxThread = cpuCores;
             //计算总共跑多少个任务,Channels
             var channels = ipList.Length / maxLength + (ipList.Length % maxLength > 0 ? 1 : 0);
             //总共要进行几个times的任务调度，一次任务跑maxThread个线程

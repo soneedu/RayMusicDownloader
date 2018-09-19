@@ -16,7 +16,7 @@ namespace MusicDownloader
             req = (HttpWebRequest) WebRequest.Create(url);
             req.UserAgent = @"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36";
             req.AllowAutoRedirect = true;
-            req.Timeout = 100000;
+            req.Timeout = 300000;
             req.CookieContainer = new CookieContainer();
             curCookies = new CookieCollection();
             req.CookieContainer.Add(curCookies);

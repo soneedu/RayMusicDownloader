@@ -55,16 +55,18 @@
             this.label1 = new System.Windows.Forms.Label();
             this.DownloadLujing = new System.Windows.Forms.TextBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.btn_downloadTest = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
+            this.radioBtn_Playlist = new System.Windows.Forms.RadioButton();
+            this.radioBtn_Single = new System.Windows.Forms.RadioButton();
+            this.btn_Youtube_DownloadMp3 = new System.Windows.Forms.Button();
             this.btn_unSelectAll = new System.Windows.Forms.Button();
             this.btn_SelectAll = new System.Windows.Forms.Button();
             this.dataGridView_Youtube = new System.Windows.Forms.DataGridView();
-            this.选择 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.progressBar_MP3 = new System.Windows.Forms.ProgressBar();
             this.label_percent_MP3download = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.btn_Youtube_To_MP3 = new System.Windows.Forms.Button();
+            this.btn_Youtube_GetMusicList = new System.Windows.Forms.Button();
             this.txtB_Youtube_URL = new System.Windows.Forms.TextBox();
             this.无损品质ToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.普通品质ToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,6 +86,9 @@
             this.标准品质ToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.YoutubeListContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem_DownloadMP3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.tabControl1.SuspendLayout();
             this.MusicTools.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.loding)).BeginInit();
@@ -96,6 +101,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_Youtube)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
             this.YoutubeListContextMenu.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // 高品质ToolStripMenuItem2
@@ -414,7 +420,10 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.btn_downloadTest);
+            this.tabPage1.Controls.Add(this.label7);
+            this.tabPage1.Controls.Add(this.radioBtn_Playlist);
+            this.tabPage1.Controls.Add(this.radioBtn_Single);
+            this.tabPage1.Controls.Add(this.btn_Youtube_DownloadMp3);
             this.tabPage1.Controls.Add(this.btn_unSelectAll);
             this.tabPage1.Controls.Add(this.btn_SelectAll);
             this.tabPage1.Controls.Add(this.dataGridView_Youtube);
@@ -422,7 +431,7 @@
             this.tabPage1.Controls.Add(this.label_percent_MP3download);
             this.tabPage1.Controls.Add(this.label6);
             this.tabPage1.Controls.Add(this.label5);
-            this.tabPage1.Controls.Add(this.btn_Youtube_To_MP3);
+            this.tabPage1.Controls.Add(this.btn_Youtube_GetMusicList);
             this.tabPage1.Controls.Add(this.txtB_Youtube_URL);
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
@@ -433,16 +442,50 @@
             this.tabPage1.Text = "Youtube转MP3";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // btn_downloadTest
+            // label7
             // 
-            this.btn_downloadTest.Location = new System.Drawing.Point(752, 110);
-            this.btn_downloadTest.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.btn_downloadTest.Name = "btn_downloadTest";
-            this.btn_downloadTest.Size = new System.Drawing.Size(100, 29);
-            this.btn_downloadTest.TabIndex = 8;
-            this.btn_downloadTest.Text = "下载测试";
-            this.btn_downloadTest.UseVisualStyleBackColor = true;
-            this.btn_downloadTest.Click += new System.EventHandler(this.btn_downloadTest_Click);
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(8, 10);
+            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(45, 15);
+            this.label7.TabIndex = 11;
+            this.label7.Text = "模式:";
+            // 
+            // radioBtn_Playlist
+            // 
+            this.radioBtn_Playlist.AutoSize = true;
+            this.radioBtn_Playlist.Checked = true;
+            this.radioBtn_Playlist.Location = new System.Drawing.Point(136, 8);
+            this.radioBtn_Playlist.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.radioBtn_Playlist.Name = "radioBtn_Playlist";
+            this.radioBtn_Playlist.Size = new System.Drawing.Size(88, 19);
+            this.radioBtn_Playlist.TabIndex = 10;
+            this.radioBtn_Playlist.TabStop = true;
+            this.radioBtn_Playlist.Text = "播放列表";
+            this.radioBtn_Playlist.UseVisualStyleBackColor = true;
+            // 
+            // radioBtn_Single
+            // 
+            this.radioBtn_Single.AutoSize = true;
+            this.radioBtn_Single.Location = new System.Drawing.Point(61, 8);
+            this.radioBtn_Single.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.radioBtn_Single.Name = "radioBtn_Single";
+            this.radioBtn_Single.Size = new System.Drawing.Size(58, 19);
+            this.radioBtn_Single.TabIndex = 9;
+            this.radioBtn_Single.Text = "单曲";
+            this.radioBtn_Single.UseVisualStyleBackColor = true;
+            // 
+            // btn_Youtube_DownloadMp3
+            // 
+            this.btn_Youtube_DownloadMp3.Location = new System.Drawing.Point(752, 110);
+            this.btn_Youtube_DownloadMp3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_Youtube_DownloadMp3.Name = "btn_Youtube_DownloadMp3";
+            this.btn_Youtube_DownloadMp3.Size = new System.Drawing.Size(100, 29);
+            this.btn_Youtube_DownloadMp3.TabIndex = 8;
+            this.btn_Youtube_DownloadMp3.Text = "下载MP3";
+            this.btn_Youtube_DownloadMp3.UseVisualStyleBackColor = true;
+            this.btn_Youtube_DownloadMp3.Click += new System.EventHandler(this.btn_Youtube_DownloadMp3_Click);
             // 
             // btn_unSelectAll
             // 
@@ -474,13 +517,12 @@
             this.dataGridView_Youtube.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridView_Youtube.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
             this.dataGridView_Youtube.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView_Youtube.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.选择});
             this.dataGridView_Youtube.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridView_Youtube.Location = new System.Drawing.Point(4, 146);
             this.dataGridView_Youtube.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.dataGridView_Youtube.Name = "dataGridView_Youtube";
             this.dataGridView_Youtube.ReadOnly = true;
+            this.dataGridView_Youtube.RowHeadersVisible = false;
             this.dataGridView_Youtube.RowTemplate.Height = 23;
             this.dataGridView_Youtube.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dataGridView_Youtube.Size = new System.Drawing.Size(872, 596);
@@ -488,18 +530,9 @@
             this.dataGridView_Youtube.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_Youtube_CellContentClick);
             this.dataGridView_Youtube.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView_Youtube_CellMouseDown);
             // 
-            // 选择
-            // 
-            this.选择.DataPropertyName = "\"IsChecked\"";
-            this.选择.FalseValue = "false";
-            this.选择.HeaderText = "选择";
-            this.选择.Name = "选择";
-            this.选择.ReadOnly = true;
-            this.选择.TrueValue = "true";
-            // 
             // progressBar_MP3
             // 
-            this.progressBar_MP3.Location = new System.Drawing.Point(61, 55);
+            this.progressBar_MP3.Location = new System.Drawing.Point(61, 79);
             this.progressBar_MP3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.progressBar_MP3.Name = "progressBar_MP3";
             this.progressBar_MP3.Size = new System.Drawing.Size(683, 24);
@@ -508,7 +541,7 @@
             // label_percent_MP3download
             // 
             this.label_percent_MP3download.AutoSize = true;
-            this.label_percent_MP3download.Location = new System.Drawing.Point(283, 58);
+            this.label_percent_MP3download.Location = new System.Drawing.Point(296, 84);
             this.label_percent_MP3download.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_percent_MP3download.Name = "label_percent_MP3download";
             this.label_percent_MP3download.Size = new System.Drawing.Size(47, 15);
@@ -518,7 +551,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(8, 55);
+            this.label6.Location = new System.Drawing.Point(8, 79);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(45, 15);
@@ -528,27 +561,27 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(8, 21);
+            this.label5.Location = new System.Drawing.Point(8, 49);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(39, 15);
             this.label5.TabIndex = 2;
             this.label5.Text = "URL:";
             // 
-            // btn_Youtube_To_MP3
+            // btn_Youtube_GetMusicList
             // 
-            this.btn_Youtube_To_MP3.Location = new System.Drawing.Point(752, 18);
-            this.btn_Youtube_To_MP3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.btn_Youtube_To_MP3.Name = "btn_Youtube_To_MP3";
-            this.btn_Youtube_To_MP3.Size = new System.Drawing.Size(100, 29);
-            this.btn_Youtube_To_MP3.TabIndex = 1;
-            this.btn_Youtube_To_MP3.Text = "下载MP3";
-            this.btn_Youtube_To_MP3.UseVisualStyleBackColor = true;
-            this.btn_Youtube_To_MP3.Click += new System.EventHandler(this.btn_Youtube_To_MP3_Click);
+            this.btn_Youtube_GetMusicList.Location = new System.Drawing.Point(752, 42);
+            this.btn_Youtube_GetMusicList.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_Youtube_GetMusicList.Name = "btn_Youtube_GetMusicList";
+            this.btn_Youtube_GetMusicList.Size = new System.Drawing.Size(100, 29);
+            this.btn_Youtube_GetMusicList.TabIndex = 1;
+            this.btn_Youtube_GetMusicList.Text = "获取清单";
+            this.btn_Youtube_GetMusicList.UseVisualStyleBackColor = true;
+            this.btn_Youtube_GetMusicList.Click += new System.EventHandler(this.btn_Youtube_GetMusiclist_Click);
             // 
             // txtB_Youtube_URL
             // 
-            this.txtB_Youtube_URL.Location = new System.Drawing.Point(61, 18);
+            this.txtB_Youtube_URL.Location = new System.Drawing.Point(61, 45);
             this.txtB_Youtube_URL.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.txtB_Youtube_URL.Name = "txtB_Youtube_URL";
             this.txtB_Youtube_URL.Size = new System.Drawing.Size(681, 25);
@@ -693,20 +726,45 @@
             this.toolStripMenuItem_DownloadMP3});
             this.YoutubeListContextMenu.Margin = new System.Windows.Forms.Padding(20, 0, 0, 40);
             this.YoutubeListContextMenu.Name = "YoutubeListContextMenu";
-            this.YoutubeListContextMenu.Size = new System.Drawing.Size(109, 28);
+            this.YoutubeListContextMenu.Size = new System.Drawing.Size(211, 56);
             // 
             // toolStripMenuItem_DownloadMP3
             // 
             this.toolStripMenuItem_DownloadMP3.Name = "toolStripMenuItem_DownloadMP3";
-            this.toolStripMenuItem_DownloadMP3.Size = new System.Drawing.Size(108, 24);
+            this.toolStripMenuItem_DownloadMP3.Size = new System.Drawing.Size(210, 24);
             this.toolStripMenuItem_DownloadMP3.Text = "下载";
             this.toolStripMenuItem_DownloadMP3.Click += new System.EventHandler(this.toolStripMenuItem_DownloadMP3_Click);
+            // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.WorkerReportsProgress = true;
+            this.backgroundWorker1.WorkerSupportsCancellation = true;
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel1});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 788);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
+            this.statusStrip1.Size = new System.Drawing.Size(891, 22);
+            this.statusStrip1.TabIndex = 55;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(891, 810);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.tabControl1);
             this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "Form1";
@@ -731,7 +789,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_Youtube)).EndInit();
             this.contextMenuStrip1.ResumeLayout(false);
             this.YoutubeListContextMenu.ResumeLayout(false);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -767,7 +828,7 @@
         private System.Windows.Forms.Label label_percent_MP3download;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button btn_Youtube_To_MP3;
+        private System.Windows.Forms.Button btn_Youtube_GetMusicList;
         private System.Windows.Forms.TextBox txtB_Youtube_URL;
         private System.Windows.Forms.ToolStripMenuItem 无损品质ToolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem 普通品质ToolStripMenuItem2;
@@ -788,9 +849,14 @@
         private System.Windows.Forms.DataGridView dataGridView_Youtube;
         private System.Windows.Forms.Button btn_unSelectAll;
         private System.Windows.Forms.Button btn_SelectAll;
-        private System.Windows.Forms.Button btn_downloadTest;
+        private System.Windows.Forms.Button btn_Youtube_DownloadMp3;
         private System.Windows.Forms.ContextMenuStrip YoutubeListContextMenu;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_DownloadMP3;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn 选择;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.RadioButton radioBtn_Playlist;
+        private System.Windows.Forms.RadioButton radioBtn_Single;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -34,7 +35,12 @@ namespace MusicDownloader
 
         private string music_id = "";
 
-        private DataTable dt;
+        public DataTable Dt;
+        public DataTable dgridSourceDt = new DataTable(); 
+        public Queue<int> CompleteQueue = new Queue<int>();
+        public int completeCounter = 0;
+
+        public bool Flag = true;
 
         private string source = "";
 
@@ -50,6 +56,10 @@ namespace MusicDownloader
 
         public List<dynamic> videoIdList = new List<dynamic>();
         public DataTable videoDataTable = new DataTable();
+
+        public ConcurrentDictionary<int, List<string>> VideoConcurrentDic =
+            new ConcurrentDictionary<int, List<string>>();
+
         public Form1()
         {
             InitializeComponent();
@@ -189,10 +199,7 @@ namespace MusicDownloader
             else
             {
                 loding.Visible = true;
-                Task.Factory.StartNew(delegate
-                {
-                    ShowDatatable();
-                });
+                Task.Factory.StartNew(delegate { ShowDatatable(); });
             }
         }
 
@@ -202,14 +209,15 @@ namespace MusicDownloader
             {
                 try
                 {
-                    dt = null;
-                    dt = new DataTable();
-                    dt.Columns.Add("序号", typeof(int));
-                    dt.Columns.Add("歌曲", typeof(string));
-                    dt.Columns.Add("歌手", typeof(string));
-                    dt.Columns.Add("专辑", typeof(string));
-                    dt.Columns.Add("ID", typeof(string));
-                    JArray jArray = JArray.Parse(GetJSON(api + "api.php?source=" + source + "&types=search&name=" + textBox1.Text.Trim() + "&count=200"));
+                    Dt = null;
+                    Dt = new DataTable();
+                    Dt.Columns.Add("序号", typeof(int));
+                    Dt.Columns.Add("歌曲", typeof(string));
+                    Dt.Columns.Add("歌手", typeof(string));
+                    Dt.Columns.Add("专辑", typeof(string));
+                    Dt.Columns.Add("ID", typeof(string));
+                    JArray jArray = JArray.Parse(GetJSON(api + "api.php?source=" + source + "&types=search&name=" +
+                                                         textBox1.Text.Trim() + "&count=200"));
                     for (int i = 0; i < jArray.Count; i++)
                     {
                         JObject jObject = JObject.Parse(jArray[i].ToString());
@@ -222,15 +230,17 @@ namespace MusicDownloader
                             {
                                 music_geshou = music_geshou + "/" + jArray2[j].ToString().Trim();
                             }
+
                             music_geshou = music_geshou.Substring(1);
                         }
                         else
                         {
                             music_geshou = jArray2[0].ToString();
                         }
+
                         music_zhuanji = jObject["album"].ToString();
                         music_id = jObject["id"].ToString();
-                        dt.Rows.Add(i + 1, music_name, music_geshou, music_zhuanji, music_id);
+                        Dt.Rows.Add(i + 1, music_name, music_geshou, music_zhuanji, music_id);
                     }
                 }
                 catch (Exception ex)
@@ -242,14 +252,16 @@ namespace MusicDownloader
             {
                 try
                 {
-                    dt = null;
-                    dt = new DataTable();
-                    dt.Columns.Add("序号", typeof(int));
-                    dt.Columns.Add("歌曲", typeof(string));
-                    dt.Columns.Add("歌手", typeof(string));
-                    dt.Columns.Add("专辑", typeof(string));
-                    dt.Columns.Add("ID", typeof(string));
-                    JObject jObject2 = JObject.Parse(GetJSON(api + "api.php?source=" + source + "&types=playlist&id=" + textBox1.Text.Trim()));
+                    Dt = null;
+                    Dt = new DataTable();
+                    Dt.Columns.Add("序号", typeof(int));
+                    Dt.Columns.Add("歌曲", typeof(string));
+                    Dt.Columns.Add("歌手", typeof(string));
+                    Dt.Columns.Add("专辑", typeof(string));
+                    Dt.Columns.Add("ID", typeof(string));
+                    JObject jObject2 =
+                        JObject.Parse(GetJSON(api + "api.php?source=" + source + "&types=playlist&id=" +
+                                              textBox1.Text.Trim()));
                     if (source == "netease")
                     {
                         JArray jArray3 = JArray.Parse(jObject2["playlist"]["tracks"].ToString());
@@ -263,7 +275,7 @@ namespace MusicDownloader
                             jObject4 = JObject.Parse(jObject3["al"].ToString());
                             music_zhuanji = jObject4["name"].ToString();
                             music_id = jObject3["id"].ToString();
-                            dt.Rows.Add(k + 1, music_name, music_geshou, music_zhuanji, music_id);
+                            Dt.Rows.Add(k + 1, music_name, music_geshou, music_zhuanji, music_id);
                         }
                     }
                     else if (source == "tencent")
@@ -282,7 +294,7 @@ namespace MusicDownloader
                             jObject8 = JObject.Parse(jObject7["album"].ToString());
                             music_zhuanji = jObject8["name"].ToString();
                             music_id = jObject7["mid"].ToString();
-                            dt.Rows.Add(l + 1, music_name, music_geshou, music_zhuanji, music_id);
+                            Dt.Rows.Add(l + 1, music_name, music_geshou, music_zhuanji, music_id);
                         }
                     }
                     else if (source == "xiami")
@@ -296,7 +308,7 @@ namespace MusicDownloader
                             music_geshou = jObject10["singers"].ToString();
                             music_zhuanji = jObject10["albumName"].ToString();
                             music_id = jObject10["songId"].ToString();
-                            dt.Rows.Add(m + 1, music_name, music_geshou, music_zhuanji, music_id);
+                            Dt.Rows.Add(m + 1, music_name, music_geshou, music_zhuanji, music_id);
                         }
                     }
                     else if (source == "kugou")
@@ -310,9 +322,13 @@ namespace MusicDownloader
                             music_name = array[1].Trim();
                             music_geshou = array[0].Trim();
                             music_zhuanji = jObject12["remark"].ToString();
-                            if (jObject12["sqhash"].ToString() == "" || jObject12["sqhash"].ToString() == string.Empty || jObject12["sqhash"].ToString() == null)
+                            if (jObject12["sqhash"].ToString() == "" ||
+                                jObject12["sqhash"].ToString() == string.Empty ||
+                                jObject12["sqhash"].ToString() == null)
                             {
-                                if (jObject12["320hash"].ToString() == "" || jObject12["320hash"].ToString() == string.Empty || jObject12["320hash"].ToString() == null)
+                                if (jObject12["320hash"].ToString() == "" ||
+                                    jObject12["320hash"].ToString() == string.Empty ||
+                                    jObject12["320hash"].ToString() == null)
                                 {
                                     music_id = jObject12["hash"].ToString();
                                 }
@@ -325,7 +341,8 @@ namespace MusicDownloader
                             {
                                 music_id = jObject12["sqhash"].ToString();
                             }
-                            dt.Rows.Add(n + 1, music_name, music_geshou, music_zhuanji, music_id);
+
+                            Dt.Rows.Add(n + 1, music_name, music_geshou, music_zhuanji, music_id);
                         }
                     }
                     else if (source == "baidu")
@@ -338,7 +355,7 @@ namespace MusicDownloader
                             music_geshou = jObject13["author"].ToString();
                             music_zhuanji = jObject13["album_title"].ToString();
                             music_id = jObject13["song_id"].ToString();
-                            dt.Rows.Add(num + 1, music_name, music_geshou, music_zhuanji, music_id);
+                            Dt.Rows.Add(num + 1, music_name, music_geshou, music_zhuanji, music_id);
                         }
                     }
                 }
@@ -347,7 +364,8 @@ namespace MusicDownloader
                     MessageBox.Show(ex2.Message);
                 }
             }
-            return dt;
+
+            return Dt;
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -368,13 +386,16 @@ namespace MusicDownloader
             {
                 return;
             }
-            JArray jArray = JArray.Parse(GetJSON(api + "api.php?source=netease&types=search&name=" + mName + "&count=1"));
+
+            JArray jArray =
+                JArray.Parse(GetJSON(api + "api.php?source=netease&types=search&name=" + mName + "&count=1"));
             JObject jObject = JObject.Parse(jArray[0].ToString());
             url = GetMP3URL(GetJSON(api + "api.php?source=netease&types=url&id=" + jObject["id"]));
             if (!(url == "") && !(url == string.Empty) && url != null)
             {
                 return;
             }
+
             jArray = JArray.Parse(GetJSON(api + "api.php?source=tencent&types=search&name=" + mName + "&count=1"));
             jObject = JObject.Parse(jArray[0].ToString());
             url = GetMP3URL(GetJSON(api + "api.php?source=tencent&types=url&id=" + jObject["id"]));
@@ -382,6 +403,7 @@ namespace MusicDownloader
             {
                 return;
             }
+
             jArray = JArray.Parse(GetJSON(api + "api.php?source=xiami&types=search&name=" + mName + "&count=1"));
             jObject = JObject.Parse(jArray[0].ToString());
             url = GetMP3URL(GetJSON(api + "api.php?source=xiami&types=url&id=" + jObject["id"]));
@@ -389,6 +411,7 @@ namespace MusicDownloader
             {
                 return;
             }
+
             jArray = JArray.Parse(GetJSON(api + "api.php?source=kugou&types=search&name=" + mName + "&count=1"));
             jObject = JObject.Parse(jArray[0].ToString());
             url = GetMP3URL(GetJSON(api + "api.php?source=kugou&types=url&id=" + jObject["id"]));
@@ -396,6 +419,7 @@ namespace MusicDownloader
             {
                 return;
             }
+
             jArray = JArray.Parse(GetJSON(api + "api.php?source=baidu&types=search&name=" + mName + "&count=1"));
             jObject = JObject.Parse(jArray[0].ToString());
             url = GetMP3URL(GetJSON(api + "api.php?source=baidu&types=url&id=" + jObject["id"]));
@@ -407,16 +431,20 @@ namespace MusicDownloader
             {
                 Directory.CreateDirectory(DownloadLujing.Text);
             }
+
             id = dataGridView1.SelectedRows[0].Cells["ID"].Value.ToString();
             url = GetMP3URL(GetJSON(api + "api.php?source=" + source + "&types=url&id=" + id));
             if (gm_gs.Checked)
             {
-                mName = dataGridView1.SelectedRows[0].Cells["歌曲"].Value + " - " + dataGridView1.SelectedRows[0].Cells["歌手"].Value;
+                mName = dataGridView1.SelectedRows[0].Cells["歌曲"].Value + " - " +
+                        dataGridView1.SelectedRows[0].Cells["歌手"].Value;
             }
             else if (gs_gm.Checked)
             {
-                mName = dataGridView1.SelectedRows[0].Cells["歌手"].Value + " - " + dataGridView1.SelectedRows[0].Cells["歌曲"].Value;
+                mName = dataGridView1.SelectedRows[0].Cells["歌手"].Value + " - " +
+                        dataGridView1.SelectedRows[0].Cells["歌曲"].Value;
             }
+
             mp3Name = mName + ".mp3";
             mp3Name = mp3Name.Replace("\\", "&").Replace("/", "&").Replace(":", "&")
                 .Replace("*", "&")
@@ -472,16 +500,21 @@ namespace MusicDownloader
             {
                 Directory.CreateDirectory(DownloadLujing.Text);
             }
+
             id = dataGridView1.SelectedRows[0].Cells["ID"].Value.ToString();
-            url = "http://isure.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() + "&guid=2095717240&fromtag=53";
+            url = "http://isure.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+                  "&guid=2095717240&fromtag=53";
             if (gm_gs.Checked)
             {
-                mName = dataGridView1.SelectedRows[0].Cells["歌曲"].Value + " - " + dataGridView1.SelectedRows[0].Cells["歌手"].Value;
+                mName = dataGridView1.SelectedRows[0].Cells["歌曲"].Value + " - " +
+                        dataGridView1.SelectedRows[0].Cells["歌手"].Value;
             }
             else if (gs_gm.Checked)
             {
-                mName = dataGridView1.SelectedRows[0].Cells["歌手"].Value + " - " + dataGridView1.SelectedRows[0].Cells["歌曲"].Value;
+                mName = dataGridView1.SelectedRows[0].Cells["歌手"].Value + " - " +
+                        dataGridView1.SelectedRows[0].Cells["歌曲"].Value;
             }
+
             mp3Name = mName + "." + type;
             mp3Name = mp3Name.Replace("\\", "&").Replace("/", "&").Replace(":", "&")
                 .Replace("*", "&")
@@ -516,22 +549,27 @@ namespace MusicDownloader
             {
                 Directory.CreateDirectory(DownloadLujing.Text);
             }
+
             int num = Convert.ToInt32(dataGridView1.Rows.Count.ToString());
             for (int i = 0; i < num; i++)
             {
-                DataGridViewCheckBoxCell dataGridViewCheckBoxCell = (DataGridViewCheckBoxCell)dataGridView1.Rows[i].Cells["选择"];
+                DataGridViewCheckBoxCell dataGridViewCheckBoxCell =
+                    (DataGridViewCheckBoxCell) dataGridView1.Rows[i].Cells["选择"];
                 if (Convert.ToBoolean(dataGridViewCheckBoxCell.Value))
                 {
                     id = dataGridView1.Rows[i].Cells["ID"].Value.ToString();
                     url = GetMP3URL(GetJSON(api + "api.php?source=" + source + "&types=url&id=" + id));
                     if (gm_gs.Checked)
                     {
-                        mName = dataGridView1.Rows[i].Cells["歌曲"].Value + " - " + dataGridView1.Rows[i].Cells["歌手"].Value;
+                        mName = dataGridView1.Rows[i].Cells["歌曲"].Value + " - " +
+                                dataGridView1.Rows[i].Cells["歌手"].Value;
                     }
                     else if (gs_gm.Checked)
                     {
-                        mName = dataGridView1.Rows[i].Cells["歌手"].Value + " - " + dataGridView1.Rows[i].Cells["歌曲"].Value;
+                        mName = dataGridView1.Rows[i].Cells["歌手"].Value + " - " +
+                                dataGridView1.Rows[i].Cells["歌曲"].Value;
                     }
+
                     mp3Name = mName + ".mp3";
                     mp3Name = mp3Name.Replace("\\", "&").Replace("/", "&").Replace(":", "&")
                         .Replace("*", "&")
@@ -549,16 +587,21 @@ namespace MusicDownloader
                             {
                                 goto IL_02f9;
                             }
+
                             continue;
                         }
+
                         File.Delete(DownloadLujing.Text + mp3Name);
                     }
+
                     goto IL_02f9;
                 }
+
                 continue;
                 IL_02f9:
                 DownloadFile(url, DownloadLujing.Text + mp3Name, progressBar1, label4);
             }
+
             Process.Start(DownloadLujing.Text);
         }
 
@@ -588,22 +631,28 @@ namespace MusicDownloader
             {
                 Directory.CreateDirectory(DownloadLujing.Text);
             }
+
             int num = Convert.ToInt32(dataGridView1.Rows.Count.ToString());
             for (int i = 0; i < num; i++)
             {
-                DataGridViewCheckBoxCell dataGridViewCheckBoxCell = (DataGridViewCheckBoxCell)dataGridView1.Rows[i].Cells["选择"];
+                DataGridViewCheckBoxCell dataGridViewCheckBoxCell =
+                    (DataGridViewCheckBoxCell) dataGridView1.Rows[i].Cells["选择"];
                 if (Convert.ToBoolean(dataGridViewCheckBoxCell.Value))
                 {
                     id = dataGridView1.Rows[i].Cells["ID"].Value.ToString();
-                    url = "http://dl.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() + "&guid=2095717240&fromtag=53";
+                    url = "http://dl.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+                          "&guid=2095717240&fromtag=53";
                     if (gm_gs.Checked)
                     {
-                        mName = dataGridView1.Rows[i].Cells["歌曲"].Value + " - " + dataGridView1.Rows[i].Cells["歌手"].Value;
+                        mName = dataGridView1.Rows[i].Cells["歌曲"].Value + " - " +
+                                dataGridView1.Rows[i].Cells["歌手"].Value;
                     }
                     else if (gs_gm.Checked)
                     {
-                        mName = dataGridView1.Rows[i].Cells["歌手"].Value + " - " + dataGridView1.Rows[i].Cells["歌曲"].Value;
+                        mName = dataGridView1.Rows[i].Cells["歌手"].Value + " - " +
+                                dataGridView1.Rows[i].Cells["歌曲"].Value;
                     }
+
                     mp3Name = mName + "." + type;
                     mp3Name = mp3Name.Replace("\\", "&").Replace("/", "&").Replace(":", "&")
                         .Replace("*", "&")
@@ -620,16 +669,21 @@ namespace MusicDownloader
                             {
                                 goto IL_02f7;
                             }
+
                             continue;
                         }
+
                         File.Delete(DownloadLujing.Text + mp3Name);
                     }
+
                     goto IL_02f7;
                 }
+
                 continue;
                 IL_02f7:
                 DownloadFile(url, DownloadLujing.Text + mp3Name, progressBar1, label4);
             }
+
             Process.Start(DownloadLujing.Text);
         }
 
@@ -639,6 +693,7 @@ namespace MusicDownloader
             {
                 Directory.CreateDirectory(DownloadLujing.Text);
             }
+
             for (int i = 0; i < dataGridView1.RowCount; i++)
             {
                 id = dataGridView1.Rows[i].Cells["ID"].Value.ToString();
@@ -651,6 +706,7 @@ namespace MusicDownloader
                 {
                     mName = dataGridView1.Rows[i].Cells["歌手"].Value + " - " + dataGridView1.Rows[i].Cells["歌曲"].Value;
                 }
+
                 mp3Name = mName + ".mp3";
                 mp3Name = mp3Name.Replace("\\", "&").Replace("/", "&").Replace(":", "&")
                     .Replace("*", "&")
@@ -668,14 +724,17 @@ namespace MusicDownloader
                         {
                             goto IL_02a1;
                         }
+
                         continue;
                     }
+
                     File.Delete(DownloadLujing.Text + mp3Name);
                 }
 
                 IL_02a1:
                 DownloadFile(url, DownloadLujing.Text + mp3Name, progressBar1, label4);
             }
+
             Process.Start(DownloadLujing.Text);
         }
 
@@ -705,10 +764,12 @@ namespace MusicDownloader
             {
                 Directory.CreateDirectory(DownloadLujing.Text);
             }
+
             for (int i = 0; i < dataGridView1.RowCount; i++)
             {
                 id = dataGridView1.Rows[i].Cells["ID"].Value.ToString();
-                url = "http://dl.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() + "&guid=2095717240&fromtag=53";
+                url = "http://dl.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+                      "&guid=2095717240&fromtag=53";
                 if (gm_gs.Checked)
                 {
                     mName = dataGridView1.Rows[i].Cells["歌曲"].Value + " - " + dataGridView1.Rows[i].Cells["歌手"].Value;
@@ -717,6 +778,7 @@ namespace MusicDownloader
                 {
                     mName = dataGridView1.Rows[i].Cells["歌手"].Value + " - " + dataGridView1.Rows[i].Cells["歌曲"].Value;
                 }
+
                 mp3Name = mName + "." + type;
                 mp3Name = mp3Name.Replace("\\", "&").Replace("/", "&").Replace(":", "&")
                     .Replace("*", "&")
@@ -733,14 +795,17 @@ namespace MusicDownloader
                         {
                             goto IL_029f;
                         }
+
                         continue;
                     }
+
                     File.Delete(DownloadLujing.Text + mp3Name);
                 }
 
                 IL_029f:
                 DownloadFile(url, DownloadLujing.Text + mp3Name, progressBar1, label4);
             }
+
             Process.Start(DownloadLujing.Text);
         }
 
@@ -797,13 +862,14 @@ namespace MusicDownloader
             try
             {
                 float num = 0;
-                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(URL);
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                int num2 = (int)httpWebResponse.ContentLength;
+                HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(URL);
+                HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
+                int num2 = (int) httpWebResponse.ContentLength;
                 if (prog != null)
                 {
                     prog.Maximum = num2;
                 }
+
                 Stream responseStream = httpWebResponse.GetResponseStream();
                 Stream stream = new FileStream(filename, FileMode.Create);
                 int num3 = 0;
@@ -819,8 +885,9 @@ namespace MusicDownloader
                     {
                         prog.Value = num3;
                     }
+
                     num4 = responseStream.Read(array, 0, array.Length);
-                    num = ((float)num3 / num2) * 100;
+                    num = ((float) num3 / num2) * 100;
                     var progText = num.ToString("F0") + "%";
                     //					baifenbi.Text = num.ToString("F2") + "%";
                     //                    Console.WriteLine(num + " : " + num3 + " : " + num2);
@@ -830,12 +897,14 @@ namespace MusicDownloader
                             SystemFonts.DefaultFont,
                             Brushes.Black,
                             new PointF(prog.Width / 2 - (gr.MeasureString(progText,
-                                                                     SystemFonts.DefaultFont).Width / 2.0F),
+                                                             SystemFonts.DefaultFont).Width / 2.0F),
                                 prog.Height / 2 - (gr.MeasureString(progText,
-                                                               SystemFonts.DefaultFont).Height / 2.0F)));
+                                                       SystemFonts.DefaultFont).Height / 2.0F)));
                     }
+
                     Application.DoEvents();
                 }
+
                 stream.Close();
                 responseStream.Close();
             }
@@ -848,14 +917,15 @@ namespace MusicDownloader
         {
             try
             {
-                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.CreateDefault(new Uri(url));
+                HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.CreateDefault(new Uri(url));
                 httpWebRequest.Method = "HEAD";
                 httpWebRequest.Timeout = 1000;
-                HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
                 if (httpWebResponse.StatusCode.ToString() == "OK")
                 {
                     return true;
                 }
+
                 return false;
             }
             catch
@@ -872,17 +942,18 @@ namespace MusicDownloader
                 {
                     dataGridView1.CurrentCell.Selected = false;
                 }
+
                 dataGridView1.Rows[e.RowIndex].Selected = true;
                 dataGridView1.CurrentCell = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex];
             }
-
         }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.ColumnIndex == 0 && e.RowIndex != -1)
             {
-                DataGridViewCheckBoxCell dataGridViewCheckBoxCell = (DataGridViewCheckBoxCell)dataGridView1.Rows[e.RowIndex].Cells["选择"];
+                DataGridViewCheckBoxCell dataGridViewCheckBoxCell =
+                    (DataGridViewCheckBoxCell) dataGridView1.Rows[e.RowIndex].Cells["选择"];
                 if (Convert.ToBoolean(dataGridViewCheckBoxCell.Value))
                 {
                     dataGridViewCheckBoxCell.Value = false;
@@ -978,31 +1049,41 @@ namespace MusicDownloader
                     this.YoutubeListContextMenu.Show(MousePosition.X, MousePosition.Y);
                 }
             }
-
         }
+
         private void toolStripMenuItem_DownloadMP3_Click(object sender, EventArgs e)
 
         {
-            string videoId = this.dataGridView_Youtube[3, this.dataGridView_Youtube.CurrentCell.RowIndex].Value.ToString();
-            string url = "https://www.youtube.com/watch?v=" + videoId;
-            DownloadMp3FromYoutube(url, this.dataGridView_Youtube.CurrentCell.RowIndex);
+            string videoId = this.dataGridView_Youtube[2, this.dataGridView_Youtube.CurrentCell.RowIndex].Value
+                .ToString();
+            int index = int.Parse(this.dataGridView_Youtube[0, this.dataGridView_Youtube.CurrentCell.RowIndex].Value.ToString());
+//            string url = "https://www.youtube.com/watch?v=" + videoId;
+//            DownloadMp3FromYoutube(url, index);
+            List<string> vList = new List<string>();
+            List<string> iList = new List<string>();
+
+            vList.Add(videoId);
+            iList.Add(index.ToString());
+            completeCounter = 0;
+            CompleteQueue.Clear();
+            Dt?.Clear();
+
+            invokeTaskFactory(vList,iList);
         }
 
-        private void useInitailTaskFactory(List<string> videoIdList,List<string> indexList)
+        private void useInitailTaskFactory(List<string> videoIdList, List<string> indexList)
         {
             string username = "";
-            string password ="";
+            string password = "";
             //需要处理的清单列表
 //            var videoIdList = new List<string>();
-            string[] adminPassLs = {username,password };
-            var threeParameter = new List<object> {videoIdList.ToArray(), indexList.ToArray() };
+            string[] adminPassLs = {username, password};
+            var threeParameter = new List<object> {videoIdList.ToArray(), indexList.ToArray()};
             threeParameter.Add(0);
             //调用TaskFactory并初始化
-            UseTaskFactory.initail_TaskFactory(threeParameter,doFunc);
+            UseTaskFactory.initail_TaskFactory(threeParameter, doFunc);
 //            var maxLength = 4;
 //            var channels = videoIdList.Count / maxLength + (videoIdList.Count % maxLength > 0 ? 1 : 0);
-            
-
         }
 
         private void doFunc(object myargs)
@@ -1018,61 +1099,176 @@ namespace MusicDownloader
             foreach (var item in itemList)
             {
                 string url = "https://www.youtube.com/watch?v=" + item;
-                DownloadMp3FromYoutube(url, int.Parse(indexList[i])-1);
+                DownloadMp3FromYoutube(url, int.Parse(indexList[i]));
                 i++;
             }
-            
 
             #endregion
-
-
         }
 
-        private async void btn_Youtube_To_MP3_Click(object sender, EventArgs e)
+        private async void btn_Youtube_GetMusiclist_Click(object sender, EventArgs e)
         {
             videoIdList.Clear();
-            var playlistId = "PLQiKLJnked44DeuQEvb2jVIZu-v_fEgfT";
-            var apiKey = "AIzaSyCgY74Kh2fE2S9PmMY68llyTihKfPbpQdk";
+            videoDataTable.Clear();
+            VideoConcurrentDic.Clear();
+            dgridSourceDt.Clear();
+            if (videoDataTable.Columns.Count == 0)
+            {
+                videoDataTable.Columns.Add("No.", typeof(string));
+                videoDataTable.Columns.Add("Title", typeof(string));
+                videoDataTable.Columns.Add("videoId", typeof(string));
+                videoDataTable.Columns.Add("DownloadPercent", typeof(string));
+            }
 
+            string url_music_link = txtB_Youtube_URL.Text;
 
-            videoDataTable.Columns.Add("No.", typeof(int));
-            videoDataTable.Columns.Add("Title", typeof(string));
-            videoDataTable.Columns.Add("videoId", typeof(string));
-            videoDataTable.Columns.Add("DownloadPercent", typeof(string));
+            if (radioBtn_Playlist.Checked)
+            {
+                if (!url_music_link.Contains("list="))
+                {
+                    MessageBox.Show("不是一个有效的Youtube Playlist地址！");
+                    return;
+                }
 
-            await Youtube.Download(playlistId, apiKey, videoDataTable);
+                MatchCollection m = Regex.Matches(url_music_link, @"list=(\S+)&?");
+                string music_id = m[0].Groups[1].Value;
+                var playlistId = music_id; //"PLQiKLJnked44DeuQEvb2jVIZu-v_fEgfT"; //;"PLQiKLJnked46hCVpwB40t6BG94MZ6VZXc"
+                var apiKey = "AIzaSyBqj3g3EDBI0wD5EdVbK4GaQfaFs5OY3XI";
+                await Youtube.Download(playlistId, apiKey, videoDataTable);
+            }
+            else
+            {
+                MatchCollection m = Regex.Matches(url_music_link, @"v=([\w|-]+)&?");
+                string music_id = m[0].Groups[1].Value;
+                List<string> singleMusicRow = new List<string>();
+                singleMusicRow.Add("");
+                videoDataTable.Rows.Add(new string[]{"0", "你懂的", music_id, ""});
+            }
+
             Console.WriteLine(videoIdList);
-            dataGridView_Youtube.DataSource = videoDataTable;
+//            dataGridView_Youtube.DataSource = videoDataTable;
 //            dataGridView_Youtube.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
 //            dataGridView_Youtube.RowsDefaultCellStyle.Alignment = DataGridViewContentAlignment.TopLeft;
-            dataGridView_Youtube.Columns["选择"].Width = 35;
-            dataGridView_Youtube.Columns["选择"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridView_Youtube.Columns["No."].Width = 30;
-            dataGridView_Youtube.Columns["No."].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+            
+            //            videoDataTable.ColumnChanging += MyColumnChanging;
+//            var thisDt = GetAllDataTableFromDataGridView(dataGridView_Youtube);
+            // 将Datatable 转成现成安全的ConcurrentDictionary类型
+            VideoConcurrentDic = new ConcurrentDictionary<int, List<string>>(videoDataTable.Rows.OfType<DataRow>().ToDictionary(
+                d => int.Parse(d.Field<string>(0)), v => new List<string>{
+                    v.Field<string>(0).ToString(),
+                    v.Field<string>(1).ToString(),
+                    v.Field<string>(2).ToString(),
+                    Convert.ToString(v.Field<string>(3))
+                }));
+
+            dgridSourceDt = conDic2DataTable(VideoConcurrentDic, videoDataTable);
+            //            dataGridView_Youtube.Columns.Clear();
+
+//            var column1 = new DataGridViewCheckBoxColumn();
+//            column1.Name = "选择";                         //Name of column
+//            column1.HeaderText = "选择";                //Title of column
+//            column1.DataPropertyName = "IsChecked";         //Name of filed in database
+//            column1.TrueValue = "true";                   //True value
+//            column1.FalseValue = "false";               //False Value
+//            this.dataGridView_Youtube.Columns.Insert(0,column1);
+
+            dataGridView_Youtube.DataSource = dgridSourceDt;
+
             dataGridView_Youtube.Show();
-            videoDataTable.ColumnChanging += MyColumnChanging;
+//            dataGridView_Youtube.Columns["选择"].Width = 35;
+//            dataGridView_Youtube.Columns["选择"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridView_Youtube.Columns["No."].Width = 10;
+            dataGridView_Youtube.Columns["Title"].Width = 100;
+            dataGridView_Youtube.Columns["videoId"].Width = 32;
+            dataGridView_Youtube.Columns["DownloadPercent"].Width = 50;
+            dataGridView_Youtube.Columns["DownloadPercent"].DefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleLeft;
+            dataGridView_Youtube.Columns["No."].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            //            dataGridView_Youtube.Update();
+
         }
-        private async void btn_downloadTest_Click(object sender, EventArgs e)
+
+        private async void btn_Youtube_DownloadMp3_Click(object sender, EventArgs e)
         {
             //            var worker = new BackgroundWorker();
             //            worker.DoWork += new DoWorkEventHandler(worker_DoWork);
             //            worker.RunWorkerAsync();
-            DataTable dt = GetDataTableFromDataGridView(dataGridView_Youtube);
+            // 选择了的DataRow，不一定是完整的videoDataTable
+            completeCounter = 0;
+            CompleteQueue.Clear();
+            Dt?.Clear();
 
-
-            List<string> vList = dt.AsEnumerable().Select(r => r.Field<string>("videoId")).ToList();
-            List<string> iList = dt.AsEnumerable().Select(r => r.Field<string>("No.")).ToList();
-//            useInitailTaskFactory(vList, iList);
-
-            int i = 0;
-            foreach ( var item in vList)
-            {
-                string url = "https://www.youtube.com/watch?v=" + item;
-                await DownloadMp3FromYoutube(url, int.Parse(iList[i])-1);
-                i++;
-            }
+            Dt = GetAllDataTableFromDataGridView(dataGridView_Youtube);
+            List<string> vList = Dt.AsEnumerable().Select(r => r.Field<string>("videoId")).ToList();
+            List<string> iList = Dt.AsEnumerable().Select(r => r.Field<string>("No.")).ToList();
+            invokeTaskFactory(vList, iList);
 
         }
+
+        private void invokeTaskFactory(List<string> vList, List<string> iList)
+        {
+            if (!backgroundWorker1.IsBusy)
+            {
+                backgroundWorker1.RunWorkerAsync();
+            }
+
+            useInitailTaskFactory(vList, iList);
+
+            //            int i = 0;
+            //            foreach (var item in vList)
+            //            {
+            //                string url = "https://www.youtube.com/watch?v=" + item;
+            //                await DownloadMp3FromYoutube(url, int.Parse(iList[i]) - 1);
+            //                i++;
+            //            }
+            while (CompleteQueue.Count != vList.Count)
+            {
+                toolStripStatusLabel1.Text = $"进度：{completeCounter} / {vList.Count}";
+                Application.DoEvents();
+                Thread.Sleep(100);
+            }
+            toolStripStatusLabel1.Text = $"进度：{completeCounter} / {vList.Count}";
+            backgroundWorker1.Dispose();
+        }
+
+
+        private DataTable conDic2DataTable(ConcurrentDictionary<int, List<string>> conDic, DataTable orginalDt)
+        {
+            // ConcurrentDictionary 转回DataTable
+            var conDt = orginalDt.Clone();
+            var SortedCustomerData = new SortedDictionary<int,List<string>>(conDic);
+            foreach ( var item in SortedCustomerData)
+            {
+                conDt.Rows.Add(item.Value.ToArray());
+            }
+            return conDt;
+        }
+
+        private bool monitorDataTable(object sender, DoWorkEventArgs e)
+        {
+            while (Flag)
+            {
+                dgridSourceDt = conDic2DataTable(VideoConcurrentDic, videoDataTable);
+                backgroundWorker1.ReportProgress(1);
+                Thread.Sleep(2000);
+            }
+
+            return true;
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            e.Result = monitorDataTable(backgroundWorker1, e); //运算结果保存在e.Result中
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            // The progress percentage is a property of e
+            dataGridView_Youtube.DataSource = dgridSourceDt;
+//            dataGridView_Youtube.Update();
+        }
+
 
         public DataTable GetDataTableFromDataGridView(DataGridView dataGridView)
         {
@@ -1080,7 +1276,7 @@ namespace MusicDownloader
             foreach (DataGridViewColumn column in dataGridView.Columns)
             {
                 //// I assume you need all your columns.
-                dataTable.Columns.Add(column.Name, typeof(string));//column.CellType
+                dataTable.Columns.Add(column.Name, typeof(string)); //column.CellType
             }
 
             foreach (DataGridViewRow row in dataGridView.Rows)
@@ -1094,21 +1290,50 @@ namespace MusicDownloader
                     {
                         values[i] = row.Cells[i].Value;
                     }
+
                     dataTable.Rows.Add(values);
                 }
             }
 
             return dataTable;
         }
+
+        public DataTable GetAllDataTableFromDataGridView(DataGridView dataGridView)
+        {
+            DataTable dataTable = new DataTable();
+            foreach (DataGridViewColumn column in dataGridView.Columns)
+            {
+                //// I assume you need all your columns.
+                dataTable.Columns.Add(column.Name, typeof(string)); //column.CellType
+            }
+
+            foreach (DataGridViewRow row in dataGridView.Rows)
+            {
+                //// If the value of the column with the checkbox is true at this row, we add it
+
+                    object[] values = new object[dataGridView.Columns.Count];
+
+                    for (int i = 0; i < row.Cells.Count; i++)
+                    {
+                        values[i] = row.Cells[i].Value;
+                    }
+
+                    dataTable.Rows.Add(values);
+                
+            }
+
+            return dataTable;
+        }
+
         void worker_DoWork(object sender, DoWorkEventArgs e)
         {
             //            updateDt();
-            DownloadMp3FromYoutube(txtB_Youtube_URL.Text,1);
+            DownloadMp3FromYoutube(txtB_Youtube_URL.Text, 1);
         }
-        private void updateDt(int index,string percent)
-        {
-           videoDataTable.Rows[index]["DownloadPercent"] = percent;
 
+        private void updateDt(int index, string percent)
+        {
+            videoDataTable.Rows[index]["DownloadPercent"] = percent;
         }
 
         private void MyColumnChanging(object sender, DataColumnChangeEventArgs e)
@@ -1125,21 +1350,30 @@ namespace MusicDownloader
                     break;
 
                 case "anotherfield":
-                    
+
                     break;
             }
         }
 
-        private async Task DownloadMp3FromYoutube(string youtubeUrl,int index)
+        private async Task DownloadMp3FromYoutube(string youtubeUrl, int index)
         {
             string urlConverter = "https://distillvideo.com/mp3?url=" + youtubeUrl;
             myWebClient myWeb = new myWebClient();
             string content = await myWeb.MakeRequestAsync(urlConverter);
             MatchCollection m = Regex.Matches(content, ".*data-href=\"(.*.mp3)\" href=\"");
-            string mp3Url = m[0].Groups[1].Value;
-            string mp3Name = mp3Url.Replace(@"https://distillvideo.com/mp3s/", "");
-            Console.WriteLine(mp3Url);
-            DownloadMP3(mp3Url, mp3Name, index);
+            if (m.Count >0)
+            {
+                string mp3Url = m[0].Groups[1].Value;
+                string mp3Name = mp3Url.Replace(@"https://distillvideo.com/mp3s/", "");
+                Console.WriteLine(mp3Url);
+                DownloadMP3(mp3Url, mp3Name, index);
+            }
+            else
+            {
+                VideoConcurrentDic[index][3] = "无法下载";
+                completeCounter++;
+                CompleteQueue.Enqueue(index);
+            }
         }
 
         public void DownloadMP3(string URL, string filename, int index)
@@ -1149,9 +1383,9 @@ namespace MusicDownloader
                 if (!File.Exists(filename))
                 {
                     float num = 0;
-                    HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(URL);
-                    HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-                    int num2 = (int)httpWebResponse.ContentLength;
+                    HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(URL);
+                    HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
+                    int num2 = (int) httpWebResponse.ContentLength;
 
                     Stream responseStream = httpWebResponse.GetResponseStream();
                     Stream stream = new FileStream(filename, FileMode.Create);
@@ -1166,20 +1400,26 @@ namespace MusicDownloader
                         stream.Write(array, 0, num4);
 
                         num4 = responseStream.Read(array, 0, array.Length);
-                        num = ((float)num3 / num2) * 100;
+                        num = ((float) num3 / num2) * 100;
                         var progText = num.ToString("F0") + "%";
-                        updateDt(index, progText);
+//                        updateDt(index, progText);
+                        VideoConcurrentDic[index][3] = progText;
+//                        Console.WriteLine($"下载进度: {index} =》 {progText}");
                         //					baifenbi.Text = num.ToString("F2") + "%";
                         //                    Console.WriteLine(num + " : " + num3 + " : " + num2);
-
-
                     }
+
                     stream.Close();
                     responseStream.Close();
                 }
-                else { updateDt(index, "已下载过了"); }
+                else
+                {
+//                    updateDt(index, "已下载过了");
+                    VideoConcurrentDic[index][3] = "已下载过了";
+                }
 
-                
+                completeCounter++;
+                CompleteQueue.Enqueue(index);
             }
             catch
             {
@@ -1190,7 +1430,8 @@ namespace MusicDownloader
         {
             if (e.ColumnIndex == 0 && e.RowIndex != -1)
             {
-                DataGridViewCheckBoxCell dataGridViewCheckBoxCell = (DataGridViewCheckBoxCell)dataGridView_Youtube.Rows[e.RowIndex].Cells["选择"];
+                DataGridViewCheckBoxCell dataGridViewCheckBoxCell =
+                    (DataGridViewCheckBoxCell) dataGridView_Youtube.Rows[e.RowIndex].Cells["选择"];
                 if (Convert.ToBoolean(dataGridViewCheckBoxCell.Value))
                 {
                     dataGridViewCheckBoxCell.Value = false;
