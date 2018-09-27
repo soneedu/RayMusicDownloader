@@ -1357,16 +1357,89 @@ namespace MusicDownloader
 
         private async Task DownloadMp3FromYoutube(string youtubeUrl, int index)
         {
-            string urlConverter = "https://distillvideo.com/mp3?url=" + youtubeUrl;
+//            string urlConverter = "https://distillvideo.com/mp3?url=" + youtubeUrl;
+//            myWebClient myWeb = new myWebClient();
+//            string content = await myWeb.MakeRequestAsync(urlConverter);
+//            MatchCollection m = Regex.Matches(content, ".*data-href=\"(.*.mp3)\" href=\"");
+//
+//            if (m.Count >0)
+//            {
+//                string mp3Url = m[0].Groups[1].Value;
+//                string mp3Name = mp3Url.Replace(@"https://distillvideo.com/mp3s/", "");
+//                Console.WriteLine(mp3Url);
+//                DownloadMP3(mp3Url, mp3Name, index);
+//            }
+//            else
+//            {
+//                VideoConcurrentDic[index][3] = "无法下载";
+//                completeCounter++;
+//                CompleteQueue.Enqueue(index);
+//            }
+
+            string startUrl = "https://y2mate.com/youtube-to-mp3/";
+            string url_prefix_ajax = "https://y2mate.com/mp3/ajax";
             myWebClient myWeb = new myWebClient();
-            string content = await myWeb.MakeRequestAsync(urlConverter);
-            MatchCollection m = Regex.Matches(content, ".*data-href=\"(.*.mp3)\" href=\"");
-            if (m.Count >0)
+            string content = await myWeb.MakeRequestAsync(startUrl);
+            string json_music = await myWeb.MakePostAsync(url_prefix_ajax,
+                $"url={youtubeUrl}&t=18s&ajax=1");
+
+            MatchCollection m = Regex.Matches(json_music, @"data-vtitle=..(.+)..\s+data-vtype=.+\s+_id:.(\w+).,.+\s+v_id:\s.([\w|\s|-]+).,");
+            var url_Mp3_download = "";
+            var videoTitle = "";
+            if (m.Count !=0)
             {
-                string mp3Url = m[0].Groups[1].Value;
-                string mp3Name = mp3Url.Replace(@"https://distillvideo.com/mp3s/", "");
-                Console.WriteLine(mp3Url);
-                DownloadMP3(mp3Url, mp3Name, index);
+                videoTitle = m[0].Groups[1].Value;
+                string _id = m[0].Groups[2].Value;
+                string v_id = m[0].Groups[3].Value;
+                string url_prefix_Convert = "https://y2mate.com/mp3Convert";
+                string json_reslut_convert =
+                    await myWeb.MakePostAsync(url_prefix_Convert, $"type=youtube&_id={_id}&v_id={v_id}&mp3_type=320");
+
+                // 处理CovertMP3时结果为Sorry的问题
+                MatchCollection sorry = Regex.Matches(json_reslut_convert, @".+(Sorry, we can not convert this video).");
+                if (sorry.Count > 0)
+                {
+                    VideoConcurrentDic[index][3] = "无法下载";
+                    completeCounter++;
+                    CompleteQueue.Enqueue(index);
+                }
+                else
+                {
+                    m = Regex.Matches(json_reslut_convert, @"<a href=.+(https:.+_320kbps.mp3).+target=");
+                    while (m.Count == 0)
+                    {
+                        json_reslut_convert =
+                            await myWeb.MakePostAsync(url_prefix_Convert, $"type=youtube&_id={_id}&v_id={v_id}&mp3_type=320");
+                        m = Regex.Matches(json_reslut_convert, @"<a href=.+(https:.+_320kbps.mp3).+target=");
+                        Thread.Sleep(500);
+                    }
+                    if (m.Count > 0)
+                    {
+                        url_Mp3_download = m[0].Groups[1].Value;
+                    }
+
+                    Console.WriteLine(url_Mp3_download);
+                    url_Mp3_download = url_Mp3_download.Replace(@"\", "");
+                    m = Regex.Matches(url_Mp3_download, $"https.+y2mate.com - (.+)_{v_id}_320kbps.mp3");
+                    var mp3Name = "";
+                    // 处理中文名字的视频，文件名为空的问题
+                    if (m.Count != 0)
+                    {
+//                        mp3Name = m[0].Groups[1].Value;
+                        mp3Name = Unicode2String(videoTitle);
+                    }
+                    else
+                    {
+                        mp3Name = Unicode2String(videoTitle); //v_id;
+                    }
+                    StringBuilder rBuilder = new StringBuilder(mp3Name);
+                    foreach (var rInvalidChar in Path.GetInvalidFileNameChars())
+                        rBuilder.Replace(rInvalidChar.ToString(), string.Empty);
+                    mp3Name = rBuilder.ToString();
+                    Console.WriteLine(mp3Name);
+                    DownloadMP3(url_Mp3_download, $"{mp3Name}.mp3", index);
+                }
+        
             }
             else
             {
@@ -1374,7 +1447,18 @@ namespace MusicDownloader
                 completeCounter++;
                 CompleteQueue.Enqueue(index);
             }
+
         }
+
+        /// Unicode转字符串
+
+        public static string Unicode2String(string source)
+        {
+            return new Regex(@"\\u([0-9A-F]{4})", RegexOptions.IgnoreCase | RegexOptions.Compiled).Replace(
+                source, x => string.Empty + Convert.ToChar(Convert.ToUInt16(x.Result("$1"), 16)));
+        }
+
+
 
         public void DownloadMP3(string URL, string filename, int index)
         {
@@ -1470,6 +1554,85 @@ namespace MusicDownloader
             }
         }
 
+        private async void  btn_Test_Click(object sender, EventArgs e)
+        {
+            var url_youtube = txtB_Youtube_URL.Text;
+            string startUrl = "https://y2mate.com/youtube-to-mp3/";
+            string url_prefix_ajax = "https://y2mate.com/mp3/ajax";
+            myWebClient myWeb = new myWebClient();
+            string content = await myWeb.MakeRequestAsync(startUrl);
+            string json_music = await myWeb.MakePostAsync(url_prefix_ajax,
+                $"url={url_youtube}&t=18s&ajax=1");
 
+            MatchCollection m = Regex.Matches(json_music, @"\s+_id:.(\w+).,.+\s+v_id:\s.([\w|\s|-]+).,");
+            string _id = m[0].Groups[1].Value;
+            string v_id = m[0].Groups[2].Value;
+            string url_prefix_Convert = "https://y2mate.com/mp3Convert";
+            string json_reslut_convert =
+                await myWeb.MakePostAsync(url_prefix_Convert, $"type=youtube&_id={_id}&v_id={v_id}&mp3_type=320");
+            var url_Mp3_download = "";
+//            m = Regex.Matches(json_reslut_convert, @".+url: .+/(checkdone2.php).+,.+\s+id: \W+(\w+)\W+,");
+//            var final_result = "";
+//            if (m.Count != 0)
+//            {
+//                if (m[0].Groups[1].Value.Contains("checkdone2"))
+//                {
+//                    var id_checkdone = m[0].Groups[2].Value;
+//                    final_result = await myWeb.MakePostAsync("https://y2mate.com/checkdone2.php",
+//                        $"type=youtube&_id={id_checkdone}&v_id={v_id}&ajax=1");
+//                }
+//            }
+//            else
+//            {
+//                final_result = json_reslut_convert;
+//            }
+            m = Regex.Matches(json_reslut_convert, @"<a href=.+(https:.+_320kbps.mp3).+target=");
+            while (m.Count == 0)
+            {
+                json_reslut_convert =
+                    await myWeb.MakePostAsync(url_prefix_Convert, $"type=youtube&_id={_id}&v_id={v_id}&mp3_type=320");
+                m = Regex.Matches(json_reslut_convert, @"<a href=.+(https:.+_320kbps.mp3).+target=");
+                Thread.Sleep(2000);
+            }
+            if (m.Count > 0)
+            {
+                url_Mp3_download = m[0].Groups[1].Value;
+            }
+
+            Console.WriteLine(url_Mp3_download);
+        }
+
+        private async Task<string> get_urlMp3DownloadFromY2mate(string url_youtube)
+        {
+            string startUrl = "https://y2mate.com/youtube-to-mp3/";
+            string url_prefix_ajax = "https://y2mate.com/mp3/ajax";
+            myWebClient myWeb = new myWebClient();
+            string content = await myWeb.MakeRequestAsync(startUrl);
+            string json_music = await myWeb.MakePostAsync(url_prefix_ajax,
+                $"url={url_youtube}&t=18s&ajax=1");
+
+            MatchCollection m = Regex.Matches(json_music, @"\s+_id:.(\w+).,.+\s+v_id:\s.([\w|\s|-]+).,");
+            string _id = m[0].Groups[1].Value;
+            string v_id = m[0].Groups[2].Value;
+            string url_prefix_Convert = "https://y2mate.com/mp3Convert";
+            string json_reslut_convert =
+                await myWeb.MakePostAsync(url_prefix_Convert, $"type=youtube&_id={_id}&v_id={v_id}&mp3_type=320");
+            var url_Mp3_download = "";
+            m = Regex.Matches(json_reslut_convert, @"<a href=.+(https:.+_320kbps.mp3).+target=");
+            while (m.Count == 0)
+            {
+                json_reslut_convert =
+                    await myWeb.MakePostAsync(url_prefix_Convert, $"type=youtube&_id={_id}&v_id={v_id}&mp3_type=320");
+                m = Regex.Matches(json_reslut_convert, @"<a href=.+(https:.+_320kbps.mp3).+target=");
+                Thread.Sleep(2000);
+            }
+            if (m.Count > 0)
+            {
+                url_Mp3_download = m[0].Groups[1].Value;
+            }
+
+            Console.WriteLine(url_Mp3_download);
+            return url_Mp3_download;
+        }
     }
 }

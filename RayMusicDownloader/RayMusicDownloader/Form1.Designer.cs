@@ -89,6 +89,7 @@
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.btn_Test = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.MusicTools.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.loding)).BeginInit();
@@ -118,7 +119,7 @@
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Top;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(891, 775);
@@ -132,9 +133,9 @@
             this.MusicTools.Controls.Add(this.dataGridView1);
             this.MusicTools.Controls.Add(this.progressBar1);
             this.MusicTools.Location = new System.Drawing.Point(4, 25);
-            this.MusicTools.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.MusicTools.Margin = new System.Windows.Forms.Padding(4);
             this.MusicTools.Name = "MusicTools";
-            this.MusicTools.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.MusicTools.Padding = new System.Windows.Forms.Padding(4);
             this.MusicTools.Size = new System.Drawing.Size(883, 746);
             this.MusicTools.TabIndex = 0;
             this.MusicTools.Text = "MusicTools";
@@ -147,7 +148,7 @@
             this.loding.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.loding.Image = global::MusicDownloader.Properties.Resources._5_130H2191323_50;
             this.loding.Location = new System.Drawing.Point(295, 354);
-            this.loding.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.loding.Margin = new System.Windows.Forms.Padding(4);
             this.loding.Name = "loding";
             this.loding.Size = new System.Drawing.Size(180, 90);
             this.loding.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -164,7 +165,7 @@
             this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.textBox1);
             this.panel1.Location = new System.Drawing.Point(8, 8);
-            this.panel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(813, 74);
             this.panel1.TabIndex = 0;
@@ -180,7 +181,7 @@
             "酷狗音乐",
             "百度音乐"});
             this.comboBox1.Location = new System.Drawing.Point(41, 21);
-            this.comboBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.comboBox1.Margin = new System.Windows.Forms.Padding(4);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(116, 23);
             this.comboBox1.TabIndex = 6;
@@ -190,7 +191,7 @@
             // 
             this.radioButton2.AutoSize = true;
             this.radioButton2.Location = new System.Drawing.Point(183, 24);
-            this.radioButton2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.radioButton2.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton2.Name = "radioButton2";
             this.radioButton2.Size = new System.Drawing.Size(74, 19);
             this.radioButton2.TabIndex = 5;
@@ -202,7 +203,7 @@
             this.radioButton1.AutoSize = true;
             this.radioButton1.Checked = true;
             this.radioButton1.Location = new System.Drawing.Point(275, 24);
-            this.radioButton1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.radioButton1.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.Size = new System.Drawing.Size(58, 19);
             this.radioButton1.TabIndex = 4;
@@ -214,7 +215,7 @@
             // 
             this.button1.BackColor = System.Drawing.Color.Transparent;
             this.button1.Location = new System.Drawing.Point(628, 21);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(133, 31);
             this.button1.TabIndex = 3;
@@ -226,7 +227,7 @@
             // 
             this.textBox1.ImeMode = System.Windows.Forms.ImeMode.Hangul;
             this.textBox1.Location = new System.Drawing.Point(349, 22);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(263, 25);
             this.textBox1.TabIndex = 1;
@@ -273,7 +274,7 @@
             // progressBar1
             // 
             this.progressBar1.Location = new System.Drawing.Point(8, 90);
-            this.progressBar1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.progressBar1.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(813, 25);
             this.progressBar1.TabIndex = 12;
@@ -286,7 +287,7 @@
             this.设置.Controls.Add(this.label1);
             this.设置.Controls.Add(this.DownloadLujing);
             this.设置.Location = new System.Drawing.Point(4, 25);
-            this.设置.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.设置.Margin = new System.Windows.Forms.Padding(4);
             this.设置.Name = "设置";
             this.设置.Size = new System.Drawing.Size(883, 746);
             this.设置.TabIndex = 2;
@@ -299,7 +300,7 @@
             this.panel4.Controls.Add(this.gm_gs);
             this.panel4.Controls.Add(this.gs_gm);
             this.panel4.Location = new System.Drawing.Point(4, 156);
-            this.panel4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panel4.Margin = new System.Windows.Forms.Padding(4);
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(821, 62);
             this.panel4.TabIndex = 22;
@@ -319,7 +320,7 @@
             this.gm_gs.AutoSize = true;
             this.gm_gs.Checked = true;
             this.gm_gs.Location = new System.Drawing.Point(244, 19);
-            this.gm_gs.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.gm_gs.Margin = new System.Windows.Forms.Padding(4);
             this.gm_gs.Name = "gm_gs";
             this.gm_gs.Size = new System.Drawing.Size(127, 19);
             this.gm_gs.TabIndex = 18;
@@ -332,7 +333,7 @@
             // 
             this.gs_gm.AutoSize = true;
             this.gs_gm.Location = new System.Drawing.Point(464, 19);
-            this.gs_gm.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.gs_gm.Margin = new System.Windows.Forms.Padding(4);
             this.gs_gm.Name = "gs_gm";
             this.gs_gm.Size = new System.Drawing.Size(127, 19);
             this.gs_gm.TabIndex = 19;
@@ -346,7 +347,7 @@
             this.panel3.Controls.Add(this.fugai);
             this.panel3.Controls.Add(this.tiaoguo);
             this.panel3.Location = new System.Drawing.Point(4, 86);
-            this.panel3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panel3.Margin = new System.Windows.Forms.Padding(4);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(821, 62);
             this.panel3.TabIndex = 21;
@@ -366,7 +367,7 @@
             this.fugai.AutoSize = true;
             this.fugai.Checked = true;
             this.fugai.Location = new System.Drawing.Point(244, 20);
-            this.fugai.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.fugai.Margin = new System.Windows.Forms.Padding(4);
             this.fugai.Name = "fugai";
             this.fugai.Size = new System.Drawing.Size(58, 19);
             this.fugai.TabIndex = 16;
@@ -379,7 +380,7 @@
             // 
             this.tiaoguo.AutoSize = true;
             this.tiaoguo.Location = new System.Drawing.Point(464, 20);
-            this.tiaoguo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tiaoguo.Margin = new System.Windows.Forms.Padding(4);
             this.tiaoguo.Name = "tiaoguo";
             this.tiaoguo.Size = new System.Drawing.Size(58, 19);
             this.tiaoguo.TabIndex = 17;
@@ -413,13 +414,14 @@
             // 
             this.DownloadLujing.ImeMode = System.Windows.Forms.ImeMode.NoControl;
             this.DownloadLujing.Location = new System.Drawing.Point(140, 36);
-            this.DownloadLujing.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.DownloadLujing.Margin = new System.Windows.Forms.Padding(4);
             this.DownloadLujing.Name = "DownloadLujing";
             this.DownloadLujing.Size = new System.Drawing.Size(565, 25);
             this.DownloadLujing.TabIndex = 13;
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.btn_Test);
             this.tabPage1.Controls.Add(this.label7);
             this.tabPage1.Controls.Add(this.radioBtn_Playlist);
             this.tabPage1.Controls.Add(this.radioBtn_Single);
@@ -434,9 +436,9 @@
             this.tabPage1.Controls.Add(this.btn_Youtube_GetMusicList);
             this.tabPage1.Controls.Add(this.txtB_Youtube_URL);
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(4);
             this.tabPage1.Size = new System.Drawing.Size(883, 746);
             this.tabPage1.TabIndex = 3;
             this.tabPage1.Text = "Youtube转MP3";
@@ -457,7 +459,7 @@
             this.radioBtn_Playlist.AutoSize = true;
             this.radioBtn_Playlist.Checked = true;
             this.radioBtn_Playlist.Location = new System.Drawing.Point(136, 8);
-            this.radioBtn_Playlist.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.radioBtn_Playlist.Margin = new System.Windows.Forms.Padding(4);
             this.radioBtn_Playlist.Name = "radioBtn_Playlist";
             this.radioBtn_Playlist.Size = new System.Drawing.Size(88, 19);
             this.radioBtn_Playlist.TabIndex = 10;
@@ -469,7 +471,7 @@
             // 
             this.radioBtn_Single.AutoSize = true;
             this.radioBtn_Single.Location = new System.Drawing.Point(61, 8);
-            this.radioBtn_Single.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.radioBtn_Single.Margin = new System.Windows.Forms.Padding(4);
             this.radioBtn_Single.Name = "radioBtn_Single";
             this.radioBtn_Single.Size = new System.Drawing.Size(58, 19);
             this.radioBtn_Single.TabIndex = 9;
@@ -478,8 +480,8 @@
             // 
             // btn_Youtube_DownloadMp3
             // 
-            this.btn_Youtube_DownloadMp3.Location = new System.Drawing.Point(752, 110);
-            this.btn_Youtube_DownloadMp3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_Youtube_DownloadMp3.Location = new System.Drawing.Point(752, 109);
+            this.btn_Youtube_DownloadMp3.Margin = new System.Windows.Forms.Padding(4);
             this.btn_Youtube_DownloadMp3.Name = "btn_Youtube_DownloadMp3";
             this.btn_Youtube_DownloadMp3.Size = new System.Drawing.Size(100, 29);
             this.btn_Youtube_DownloadMp3.TabIndex = 8;
@@ -490,7 +492,7 @@
             // btn_unSelectAll
             // 
             this.btn_unSelectAll.Location = new System.Drawing.Point(131, 110);
-            this.btn_unSelectAll.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_unSelectAll.Margin = new System.Windows.Forms.Padding(4);
             this.btn_unSelectAll.Name = "btn_unSelectAll";
             this.btn_unSelectAll.Size = new System.Drawing.Size(100, 29);
             this.btn_unSelectAll.TabIndex = 7;
@@ -501,7 +503,7 @@
             // btn_SelectAll
             // 
             this.btn_SelectAll.Location = new System.Drawing.Point(9, 110);
-            this.btn_SelectAll.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_SelectAll.Margin = new System.Windows.Forms.Padding(4);
             this.btn_SelectAll.Name = "btn_SelectAll";
             this.btn_SelectAll.Size = new System.Drawing.Size(100, 29);
             this.btn_SelectAll.TabIndex = 6;
@@ -519,7 +521,7 @@
             this.dataGridView_Youtube.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView_Youtube.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridView_Youtube.Location = new System.Drawing.Point(4, 146);
-            this.dataGridView_Youtube.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dataGridView_Youtube.Margin = new System.Windows.Forms.Padding(4);
             this.dataGridView_Youtube.Name = "dataGridView_Youtube";
             this.dataGridView_Youtube.ReadOnly = true;
             this.dataGridView_Youtube.RowHeadersVisible = false;
@@ -533,7 +535,7 @@
             // progressBar_MP3
             // 
             this.progressBar_MP3.Location = new System.Drawing.Point(61, 79);
-            this.progressBar_MP3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.progressBar_MP3.Margin = new System.Windows.Forms.Padding(4);
             this.progressBar_MP3.Name = "progressBar_MP3";
             this.progressBar_MP3.Size = new System.Drawing.Size(683, 24);
             this.progressBar_MP3.TabIndex = 4;
@@ -571,7 +573,7 @@
             // btn_Youtube_GetMusicList
             // 
             this.btn_Youtube_GetMusicList.Location = new System.Drawing.Point(752, 42);
-            this.btn_Youtube_GetMusicList.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_Youtube_GetMusicList.Margin = new System.Windows.Forms.Padding(4);
             this.btn_Youtube_GetMusicList.Name = "btn_Youtube_GetMusicList";
             this.btn_Youtube_GetMusicList.Size = new System.Drawing.Size(100, 29);
             this.btn_Youtube_GetMusicList.TabIndex = 1;
@@ -582,7 +584,7 @@
             // txtB_Youtube_URL
             // 
             this.txtB_Youtube_URL.Location = new System.Drawing.Point(61, 45);
-            this.txtB_Youtube_URL.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtB_Youtube_URL.Margin = new System.Windows.Forms.Padding(4);
             this.txtB_Youtube_URL.Name = "txtB_Youtube_URL";
             this.txtB_Youtube_URL.Size = new System.Drawing.Size(681, 25);
             this.txtB_Youtube_URL.TabIndex = 0;
@@ -726,12 +728,12 @@
             this.toolStripMenuItem_DownloadMP3});
             this.YoutubeListContextMenu.Margin = new System.Windows.Forms.Padding(20, 0, 0, 40);
             this.YoutubeListContextMenu.Name = "YoutubeListContextMenu";
-            this.YoutubeListContextMenu.Size = new System.Drawing.Size(211, 56);
+            this.YoutubeListContextMenu.Size = new System.Drawing.Size(109, 28);
             // 
             // toolStripMenuItem_DownloadMP3
             // 
             this.toolStripMenuItem_DownloadMP3.Name = "toolStripMenuItem_DownloadMP3";
-            this.toolStripMenuItem_DownloadMP3.Size = new System.Drawing.Size(210, 24);
+            this.toolStripMenuItem_DownloadMP3.Size = new System.Drawing.Size(108, 24);
             this.toolStripMenuItem_DownloadMP3.Text = "下载";
             this.toolStripMenuItem_DownloadMP3.Click += new System.EventHandler(this.toolStripMenuItem_DownloadMP3_Click);
             // 
@@ -759,6 +761,16 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
+            // btn_Test
+            // 
+            this.btn_Test.Location = new System.Drawing.Point(639, 113);
+            this.btn_Test.Name = "btn_Test";
+            this.btn_Test.Size = new System.Drawing.Size(75, 23);
+            this.btn_Test.TabIndex = 12;
+            this.btn_Test.Text = "Test";
+            this.btn_Test.UseVisualStyleBackColor = true;
+            this.btn_Test.Click += new System.EventHandler(this.btn_Test_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -766,7 +778,7 @@
             this.ClientSize = new System.Drawing.Size(891, 810);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.tabControl1);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "RayMusicDownloader";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
@@ -858,5 +870,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.RadioButton radioBtn_Playlist;
         private System.Windows.Forms.RadioButton radioBtn_Single;
+        private System.Windows.Forms.Button btn_Test;
     }
 }
