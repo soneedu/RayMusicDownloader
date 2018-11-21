@@ -48,7 +48,7 @@ namespace MusicDownloader
 
                     }
 
-                    nextPageToken = subresult.NextPageToken;
+                    nextPageToken = subresult.nextPageToken;
                 }
 
             }
