@@ -55,6 +55,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.DownloadLujing = new System.Windows.Forms.TextBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.btn_Test = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
             this.radioBtn_Playlist = new System.Windows.Forms.RadioButton();
             this.radioBtn_Single = new System.Windows.Forms.RadioButton();
@@ -89,7 +90,6 @@
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.btn_Test = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.MusicTools.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.loding)).BeginInit();
@@ -444,6 +444,16 @@
             this.tabPage1.Text = "Youtube转MP3";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // btn_Test
+            // 
+            this.btn_Test.Location = new System.Drawing.Point(639, 113);
+            this.btn_Test.Name = "btn_Test";
+            this.btn_Test.Size = new System.Drawing.Size(75, 23);
+            this.btn_Test.TabIndex = 12;
+            this.btn_Test.Text = "Test";
+            this.btn_Test.UseVisualStyleBackColor = true;
+            this.btn_Test.Click += new System.EventHandler(this.btn_Test_Click);
+            // 
             // label7
             // 
             this.label7.AutoSize = true;
@@ -577,7 +587,7 @@
             this.btn_Youtube_GetMusicList.Name = "btn_Youtube_GetMusicList";
             this.btn_Youtube_GetMusicList.Size = new System.Drawing.Size(100, 29);
             this.btn_Youtube_GetMusicList.TabIndex = 1;
-            this.btn_Youtube_GetMusicList.Text = "获取清单";
+            this.btn_Youtube_GetMusicList.Text = "获取列表";
             this.btn_Youtube_GetMusicList.UseVisualStyleBackColor = true;
             this.btn_Youtube_GetMusicList.Click += new System.EventHandler(this.btn_Youtube_GetMusiclist_Click);
             // 
@@ -760,16 +770,6 @@
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
-            // 
-            // btn_Test
-            // 
-            this.btn_Test.Location = new System.Drawing.Point(639, 113);
-            this.btn_Test.Name = "btn_Test";
-            this.btn_Test.Size = new System.Drawing.Size(75, 23);
-            this.btn_Test.TabIndex = 12;
-            this.btn_Test.Text = "Test";
-            this.btn_Test.UseVisualStyleBackColor = true;
-            this.btn_Test.Click += new System.EventHandler(this.btn_Test_Click);
             // 
             // Form1
             // 
