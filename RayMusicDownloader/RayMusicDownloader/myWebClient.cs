@@ -76,7 +76,9 @@ namespace MusicDownloader
                     var data = Encoding.ASCII.GetBytes(postData);
                     req.Method = "Post";
 
-                    req.ContentType = "application/x-www-form-urlencoded";
+                    req.ContentType = "application/x-www-form-urlencoded; charset=UTF-8";
+                    req.Accept = "*/*";
+
                     req.ContentLength = data.Length;
 
                     using (var stream = req.GetRequestStream())

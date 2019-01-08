@@ -1383,7 +1383,7 @@ namespace MusicDownloader
             string json_music = await myWeb.MakePostAsync(url_prefix_ajax,
                 $"url={youtubeUrl}&t=18s&ajax=1");
 
-            MatchCollection m = Regex.Matches(json_music, @"vtitle = \\.(.+)..;\\r\\n\\r\\n..this..find.*_id:.(.+).,.*v_id:..(.+).,.*mp3_type.*");   // data -vtitle=..(.+)..\s+data-vtype=.+\s+_id:.(\w+).,.+\s+v_id:\s.([\w|\s|-]+).,
+            MatchCollection m = Regex.Matches(json_music, @"vtitle = \\.(.+)..;\\r\\n\\r\\n..this..find.*_id:\s?\W?(.+).,.*v_id:..(.+).,.*mp3_type.*");   // data -vtitle=..(.+)..\s+data-vtype=.+\s+_id:.(\w+).,.+\s+v_id:\s.([\w|\s|-]+).,
             var url_Mp3_download = "";
             var videoTitle = "";
             if (m.Count !=0)
@@ -1405,12 +1405,16 @@ namespace MusicDownloader
                 }
                 else
                 {
-                    m = Regex.Matches(json_reslut_convert, @"<a href=.+(http.?:.+_320kbps.mp3).+target=");
+                    m = Regex.Matches(json_reslut_convert, @"<a href=.+(http.?:.+)\\\W?\s?target="); // <a href=.+(http.?:.+_320kbps.mp3).+target=
                     while (m.Count == 0)
                     {
+
+//                        var json_checkdone = await myWeb.MakePostAsync("https://y2mate.com/checkdone2.php",
+//                            $"type=youtube&_id={_id}&v_id={v_id}&ajax=1");
+//                        m = Regex.Matches(json_checkdone, @"<a href=.+(http.?:.+_320kbps.mp3).+target=");
                         json_reslut_convert =
-                            await myWeb.MakePostAsync(url_prefix_Convert, $"type=youtube&_id={_id}&v_id={v_id}&mp3_type=320");
-                        m = Regex.Matches(json_reslut_convert, @"<a href=.+(http.?:.+_320kbps.mp3).+target=");
+                            await myWeb.MakePostAsync(url_prefix_Convert, $"type=youtube&_id={_id}&v_id={v_id}&mp3_type=320&token=");
+                        m = Regex.Matches(json_reslut_convert, @"<a href=.+(http.?:.+)\\\W?\s?target="); //<a href=.+(http.?:.+_320kbps.mp3).+target=
                         Thread.Sleep(500);
                     }
                     if (m.Count > 0)
