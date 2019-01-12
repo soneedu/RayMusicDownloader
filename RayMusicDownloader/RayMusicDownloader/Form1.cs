@@ -1638,5 +1638,18 @@ namespace MusicDownloader
             Console.WriteLine(url_Mp3_download);
             return url_Mp3_download;
         }
+
+        private void btn_pasteURL_Click(object sender, EventArgs e)
+        {
+            IDataObject iData = Clipboard.GetDataObject();
+            if (iData.GetDataPresent(DataFormats.Text))
+            {//如果剪贴板中的数据是文本格式 
+                this.txtB_Youtube_URL.Text = (string)iData.GetData(DataFormats.Text);//检索与指定格式相关联的数据 
+            }
+            else
+            {
+                MessageBox.Show("目前剪贴板中数据不可转换为文本", "错误");
+            }
+        }
     }
 }
