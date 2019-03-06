@@ -73,7 +73,7 @@ namespace MusicDownloader
 
             try
             {
-                comboBox1.SelectedIndex = 0;
+                comboBox1.SelectedIndex = 1;
                 regkey = Registry.CurrentUser.OpenSubKey("Software\\MusicTools");
                 if (regkey == null)
                 {
@@ -122,7 +122,7 @@ namespace MusicDownloader
                 //                JArray jArray = JArray.Parse(jObject["data"].ToString());
                 //                JObject jObject2 = JObject.Parse(jArray[0].ToString());
                 //                api = jObject2["api"].ToString(); 
-                api = @"http://tools.yijingying.com/MKOnlineMusicPlayer/";
+                api = @"http://szsylm.com/MKOnlineMusicPlayer/"; // @"http://tools.yijingying.com/MKOnlineMusicPlayer/";
             }
             catch (Exception ex)
             {
@@ -216,8 +216,10 @@ namespace MusicDownloader
                     Dt.Columns.Add("歌手", typeof(string));
                     Dt.Columns.Add("专辑", typeof(string));
                     Dt.Columns.Add("ID", typeof(string));
-                    JArray jArray = JArray.Parse(GetJSON(api + "api.php?source=" + source + "&types=search&name=" +
-                                                         textBox1.Text.Trim() + "&count=200"));
+                    var songqueryJson = GetJSON(api + "api.php?source=" + source + "&types=search&name=" +
+                                                textBox1.Text.Trim() + "&count=200");
+
+                    JArray jArray = JArray.Parse(songqueryJson);
                     for (int i = 0; i < jArray.Count; i++)
                     {
                         JObject jObject = JObject.Parse(jArray[i].ToString());
@@ -502,8 +504,10 @@ namespace MusicDownloader
             }
 
             id = dataGridView1.SelectedRows[0].Cells["ID"].Value.ToString();
-            url = "http://isure.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+            url = "http://streamoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
                   "&guid=2095717240&fromtag=53";
+
+
             if (gm_gs.Checked)
             {
                 mName = dataGridView1.SelectedRows[0].Cells["歌曲"].Value + " - " +
@@ -640,7 +644,7 @@ namespace MusicDownloader
                 if (Convert.ToBoolean(dataGridViewCheckBoxCell.Value))
                 {
                     id = dataGridView1.Rows[i].Cells["ID"].Value.ToString();
-                    url = "http://dl.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+                    url = "http://streamoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
                           "&guid=2095717240&fromtag=53";
                     if (gm_gs.Checked)
                     {
@@ -768,7 +772,7 @@ namespace MusicDownloader
             for (int i = 0; i < dataGridView1.RowCount; i++)
             {
                 id = dataGridView1.Rows[i].Cells["ID"].Value.ToString();
-                url = "http://dl.stream.qqmusic.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+                url = "http://streamoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
                       "&guid=2095717240&fromtag=53";
                 if (gm_gs.Checked)
                 {
