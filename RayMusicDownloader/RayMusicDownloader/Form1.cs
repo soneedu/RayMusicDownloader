@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
+using Swifter.Json;
 
 namespace MusicDownloader
 {
@@ -28,12 +29,10 @@ namespace MusicDownloader
         private string[] qqss_music = new string[2];
 
         private string music_name = "";
-
         private string music_geshou = "";
-
         private string music_zhuanji = "";
-
         private string music_id = "";
+        private string music_download_type = "";
 
         public DataTable Dt;
         public DataTable dgridSourceDt = new DataTable(); 
@@ -122,7 +121,7 @@ namespace MusicDownloader
                 //                JArray jArray = JArray.Parse(jObject["data"].ToString());
                 //                JObject jObject2 = JObject.Parse(jArray[0].ToString());
                 //                api = jObject2["api"].ToString(); 
-                api = @"http://szsylm.com/MKOnlineMusicPlayer/"; // @"http://tools.yijingying.com/MKOnlineMusicPlayer/";
+                api = @"https://c.y.qq.com/soso/fcgi-bin/client_search_cp?ct=24&qqmusic_ver=1298&new_json=1&remoteplace=txt.yqq.song&searchid=55196029248120147&t=0&aggr=1&cr=1&catZhida=1&lossless=0&flag_qc=0&p=1&n=100&g_tk=5381&loginUin=0&hostUin=0&format=json&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=0 ";  //@"http://szsylm.com/MKOnlineMusicPlayer/"; // @"http://tools.yijingying.com/MKOnlineMusicPlayer/";
             }
             catch (Exception ex)
             {
@@ -216,15 +215,23 @@ namespace MusicDownloader
                     Dt.Columns.Add("歌手", typeof(string));
                     Dt.Columns.Add("专辑", typeof(string));
                     Dt.Columns.Add("ID", typeof(string));
-                    var songqueryJson = GetJSON(api + "api.php?source=" + source + "&types=search&name=" +
-                                                textBox1.Text.Trim() + "&count=200");
+                    Dt.Columns.Add("最高品质", typeof(string));
+                    var songqueryJson = GetJSON(api + "&w=" + textBox1.Text.Trim());
 
-                    JArray jArray = JArray.Parse(songqueryJson);
+                    JObject jObject2 =
+                        JObject.Parse(songqueryJson);
+
+                    var songLs = jObject2["data"]["song"]["list"];
+//                    var dictionary = JsonFormatter.DeserializeObject<Dictionary<string, object>>(songqueryJson);
+//                    var songDic_data = dictionary["data"] as Dictionary<string, object>;
+//                    var songDic_song = songDic_data["song"] as Dictionary<string, object>;
+//                    var songDic_list = songDic_song["list"];
+                    JArray jArray = JArray.Parse(songLs.ToString());
                     for (int i = 0; i < jArray.Count; i++)
                     {
                         JObject jObject = JObject.Parse(jArray[i].ToString());
                         music_name = jObject["name"].ToString();
-                        JArray jArray2 = JArray.Parse(jObject["artist"].ToString());
+                        JArray jArray2 = JArray.Parse(jObject["singer"].ToString());
                         music_geshou = null;
                         if (jArray2.Count > 1)
                         {
@@ -237,12 +244,22 @@ namespace MusicDownloader
                         }
                         else
                         {
-                            music_geshou = jArray2[0].ToString();
+                            music_geshou = jArray2[0]["name"].ToString();
                         }
 
-                        music_zhuanji = jObject["album"].ToString();
-                        music_id = jObject["id"].ToString();
-                        Dt.Rows.Add(i + 1, music_name, music_geshou, music_zhuanji, music_id);
+                        music_zhuanji = jObject["album"]["name"].ToString();
+                        music_id = jObject["file"]["media_mid"].ToString();
+                        var flag_flac = jObject["file"]["size_flac"].ToString();
+                        if (flag_flac == "0")
+                        {
+                            music_download_type = "320K";
+                        }
+                        else
+                        {
+                            music_download_type = "FLAC";
+                        }
+
+                        Dt.Rows.Add(i + 1, music_name, music_geshou, music_zhuanji, music_id, music_download_type);
                     }
                 }
                 catch (Exception ex)
