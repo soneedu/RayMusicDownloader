@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
-using Swifter.Json;
+
 
 namespace MusicDownloader
 {
@@ -58,6 +58,16 @@ namespace MusicDownloader
 
         public ConcurrentDictionary<int, List<string>> VideoConcurrentDic =
             new ConcurrentDictionary<int, List<string>>();
+
+
+        public int threadNum { get; set; }          // 进程
+        public bool[] threadStatus { get; set; }    // 每个线程结束标志
+        public string[] fileNames { get; set; }     // 每个线程接收文件的文件名
+        public int[] StartPos { get; set; }     // 每个线程接收文件的起始位置
+        public int[] fileSize { get; set; }         // 每个线程接收文件的大小
+        public string Url { get; set; }             // 接受文件的URL
+        public bool HasMerge { get; set; }           // 文件合并标志
+
 
         public Form1()
         {
@@ -202,6 +212,85 @@ namespace MusicDownloader
             }
         }
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <remarks>
+        /// 每个线程平均分配文件大小，剩余部分由最后一个线程完成
+        /// </remarks>
+        /// <param name="filesize"></param>
+        private void Init(long filesize)
+        {
+            threadStatus = new bool[threadNum];
+            fileNames = new string[threadNum];
+            StartPos = new int[threadNum];
+            fileSize = new int[threadNum];
+            int filethread = (int)filesize / threadNum;
+            int filethreade = filethread + (int)filesize % threadNum;
+            for (int i = 0; i < threadNum; i++)
+            {
+                threadStatus[i] = false;
+                fileNames[i] = i.ToString() + ".dat";
+                if (i < threadNum - 1)
+                {
+                    StartPos[i] = filethread * i;
+                    fileSize[i] = filethread - 1;
+                }
+                else
+                {
+                    StartPos[i] = filethread * i;
+                    fileSize[i] = filethreade - 1;
+                }
+            }
+        }
+        /// <summary>
+        /// 合并文件
+        /// </summary>
+        public void MergeFile(object filename_todownload)
+        {
+            var filename_download = filename_todownload as string;
+            while (true)
+            {
+                HasMerge = true;
+                for (int i = 0; i < threadNum; i++)
+                {
+                    if (threadStatus[i] == false) // 若有未结束线程，则等待
+                    {
+                        HasMerge = false;
+                        System.Threading.Thread.Sleep(100);
+                        break;
+                    }
+                }
+                if (HasMerge == true) // 否则，停止等待
+                    break;
+            }
+
+            int bufferSize = 5120;
+            int readSize;
+            string downFileNamePath = filename_download.Trim().ToString();
+            byte[] bytes = new byte[bufferSize];
+            FileStream fs = new FileStream(downFileNamePath, FileMode.Create);
+            FileStream fsTmp = null;
+
+            for (int k = 0; k < threadNum; k++)
+            {
+                fsTmp = new FileStream(fileNames[k], FileMode.Open);
+                while (true)
+                {
+                    readSize = fsTmp.Read(bytes, 0, bufferSize);
+                    if (readSize > 0)
+                        fs.Write(bytes, 0, readSize);
+                    else
+                        break;
+                }
+                fsTmp.Close();
+            }
+            fs.Close();
+            MessageBox.Show("接收完毕!!!");
+        }
+
+
+
         public DataTable InitDt()
         {
             if (radioButton1.Checked)
@@ -237,7 +326,7 @@ namespace MusicDownloader
                         {
                             for (int j = 0; j < jArray2.Count; j++)
                             {
-                                music_geshou = music_geshou + "/" + jArray2[j].ToString().Trim();
+                                music_geshou = music_geshou + "/" + jArray2[j]["name"].ToString().Trim();
                             }
 
                             music_geshou = music_geshou.Substring(1);
@@ -247,7 +336,7 @@ namespace MusicDownloader
                             music_geshou = jArray2[0]["name"].ToString();
                         }
 
-                        music_zhuanji = jObject["album"]["name"].ToString();
+                        music_zhuanji = jObject["album"]["title"].ToString();
                         music_id = jObject["file"]["media_mid"].ToString();
                         var flag_flac = jObject["file"]["size_flac"].ToString();
                         if (flag_flac == "0")
@@ -521,7 +610,7 @@ namespace MusicDownloader
             }
 
             id = dataGridView1.SelectedRows[0].Cells["ID"].Value.ToString();
-            url = "http://streamoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+            url = "http://mobileoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
                   "&guid=2095717240&fromtag=53";
 
 
@@ -661,7 +750,7 @@ namespace MusicDownloader
                 if (Convert.ToBoolean(dataGridViewCheckBoxCell.Value))
                 {
                     id = dataGridView1.Rows[i].Cells["ID"].Value.ToString();
-                    url = "http://streamoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+                    url = "http://mobileoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
                           "&guid=2095717240&fromtag=53";
                     if (gm_gs.Checked)
                     {
@@ -789,7 +878,7 @@ namespace MusicDownloader
             for (int i = 0; i < dataGridView1.RowCount; i++)
             {
                 id = dataGridView1.Rows[i].Cells["ID"].Value.ToString();
-                url = "http://streamoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
+                url = "http://mobileoc.music.tc.qq.com/" + pinzhi + id + "." + type + "?vkey=" + GetQQMusic_vkey() +
                       "&guid=2095717240&fromtag=53";
                 if (gm_gs.Checked)
                 {
@@ -880,58 +969,92 @@ namespace MusicDownloader
 
         public void DownloadFile(string URL, string filename, ProgressBar prog, Label baifenbi)
         {
-            try
+            
+//            try
+//            {
+//                float num = 0;
+//                HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(URL);
+//                HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
+//                int num2 = (int) httpWebResponse.ContentLength;
+//                if (prog != null)
+//                {
+//                    prog.Maximum = num2;
+//                }
+//
+//                Stream responseStream = httpWebResponse.GetResponseStream();
+//                Stream stream = new FileStream(filename, FileMode.Create);
+//                int num3 = 0;
+//                byte[] array = new byte[1024];
+//                int num4 = responseStream.Read(array, 0, array.Length);
+//                //			    label4.Visible = true;
+//                while (num4 > 0)
+//                {
+//                    num3 = num4 + num3;
+//                    Application.DoEvents();
+//                    stream.Write(array, 0, num4);
+//                    if (prog != null)
+//                    {
+//                        prog.Value = num3;
+//                    }
+//
+//                    num4 = responseStream.Read(array, 0, array.Length);
+//                    num = ((float) num3 / num2) * 100;
+//                    var progText = num.ToString("F0") + "%";
+//                    //					baifenbi.Text = num.ToString("F2") + "%";
+//                    //                    Console.WriteLine(num + " : " + num3 + " : " + num2);
+//                    using (Graphics gr = prog.CreateGraphics())
+//                    {
+//                        gr.DrawString(progText,
+//                            SystemFonts.DefaultFont,
+//                            Brushes.Black,
+//                            new PointF(prog.Width / 2 - (gr.MeasureString(progText,
+//                                                             SystemFonts.DefaultFont).Width / 2.0F),
+//                                prog.Height / 2 - (gr.MeasureString(progText,
+//                                                       SystemFonts.DefaultFont).Height / 2.0F)));
+//                    }
+//
+//                    Application.DoEvents();
+//                }
+//
+//                stream.Close();
+//                responseStream.Close();
+//            }
+//            catch
+//            {
+//            }
+
+
+
+            long fileSizeAll = 0;
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
+            fileSizeAll = request.GetResponse().ContentLength;
+            request.Abort();
+            threadNum = 5; // int.Parse(this.txt_threadNum.Text.Trim().ToString());
+            Init(fileSizeAll);
+//            for (int i = 0; i < threadNum; i++)
+//            {
+//                this.lst_processing.Items.Add("线程[" + i + "]:" + (threadStatus[i] ? "结束" : "开始......"));
+//                this.lst_processing.Items.Add(("开始位置:" + StartPos[i].ToString()).PadLeft(20, ' ') +
+//                                              ("总大小:" + fileSize[i].ToString()).PadLeft(20, ' '));
+//            }
+//            this.lst_processing.Items.Add("------------------------------文件总大小：" + fileSizeAll);
+
+            // 定义并启动线程数组
+            System.Threading.Thread[] threads = new System.Threading.Thread[threadNum];
+            HttpMultiThreadDownload[] httpDownloads = new HttpMultiThreadDownload[threadNum];
+            for (int i = 0; i < threadNum; i++)
             {
-                float num = 0;
-                HttpWebRequest httpWebRequest = (HttpWebRequest) WebRequest.Create(URL);
-                HttpWebResponse httpWebResponse = (HttpWebResponse) httpWebRequest.GetResponse();
-                int num2 = (int) httpWebResponse.ContentLength;
-                if (prog != null)
-                {
-                    prog.Maximum = num2;
-                }
-
-                Stream responseStream = httpWebResponse.GetResponseStream();
-                Stream stream = new FileStream(filename, FileMode.Create);
-                int num3 = 0;
-                byte[] array = new byte[1024];
-                int num4 = responseStream.Read(array, 0, array.Length);
-                //			    label4.Visible = true;
-                while (num4 > 0)
-                {
-                    num3 = num4 + num3;
-                    Application.DoEvents();
-                    stream.Write(array, 0, num4);
-                    if (prog != null)
-                    {
-                        prog.Value = num3;
-                    }
-
-                    num4 = responseStream.Read(array, 0, array.Length);
-                    num = ((float) num3 / num2) * 100;
-                    var progText = num.ToString("F0") + "%";
-                    //					baifenbi.Text = num.ToString("F2") + "%";
-                    //                    Console.WriteLine(num + " : " + num3 + " : " + num2);
-                    using (Graphics gr = prog.CreateGraphics())
-                    {
-                        gr.DrawString(progText,
-                            SystemFonts.DefaultFont,
-                            Brushes.Black,
-                            new PointF(prog.Width / 2 - (gr.MeasureString(progText,
-                                                             SystemFonts.DefaultFont).Width / 2.0F),
-                                prog.Height / 2 - (gr.MeasureString(progText,
-                                                       SystemFonts.DefaultFont).Height / 2.0F)));
-                    }
-
-                    Application.DoEvents();
-                }
-
-                stream.Close();
-                responseStream.Close();
+                httpDownloads[i] = new HttpMultiThreadDownload(this, i);
+                httpDownloads[i].Url = URL;
+                threads[i] = new System.Threading.Thread(new System.Threading.ThreadStart(httpDownloads[i].receive));
+                threads[i].Start();
+                threads[i].Join();
             }
-            catch
-            {
-            }
+            Thread merge = new Thread(new ParameterizedThreadStart(MergeFile)); 
+            merge.Start(filename);
+//            this.txt_overTime.Text = DateTime.Now.ToString();
+
         }
 
         public bool GetHttp(string url)
